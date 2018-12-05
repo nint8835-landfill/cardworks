@@ -1,6 +1,7 @@
-from typing import Optional, Union
+from typing import Union
 
 from . import Player
+
 
 class Card(object):
     """
@@ -11,7 +12,7 @@ class Card(object):
 
     name: str = "Unnamed Card"
     description: str = "No description specified."
-    
+
     def on_play(self):
         """
         Called when this card is played.
@@ -39,18 +40,25 @@ class Creature(Card):
         Called when this creature targets either another creature or a player.
         :param target: The target that this creature is attacking.
         """
-        target.health -= self.attack
 
         if isinstance(target, Player):
             for card in target.board:
                 card.on_attacked(self)
         else:
             target.on_attacked(self)
-    
+
     def on_attacked(self, attacker: Creature):
         """
         Called when this creature is attacked by another creature.
         :param attacker: The creature that is attacking.
         """
-        pass
+        self.health -= attacker.attack
+        if self.health <= 0:
+            self.on_destroyed()
 
+    def on_destroyed(self):
+        """
+        Called when this card is destroyed
+        """
+        self.owner.board.remove(self)
+        self.owner.graveyard.append(self)
